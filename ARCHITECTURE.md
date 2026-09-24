@@ -7,22 +7,24 @@ Reference image + user intent
           ↓
       /api/analyze
           ↓
-Vision model returns structured JSON
+Google Gemini multimodal model
           ↓
-Prompt engine renders model-aware prompt
+Structured visual profile + generation prompt
           ↓
 Conversation state updates without re-uploading the image
 ```
 
 The route accepts a base64 data URL and a text instruction. It requests a stable JSON object with subject, composition, camera, lighting, color, environment, materials, style, mood, quality, uncertainties, generation prompt, and negative prompt.
 
-## Provider boundary
+## Provider configuration
 
-`app/api/analyze/route.ts` is intentionally the only provider-specific module. A future `lib/ai/provider.ts` can expose `analyzeImage()` and adapters can translate the base prompt for Flux, Midjourney, Stable Diffusion, or a custom target.
+The provider is Google Gemini via its REST `generateContent` endpoint. `GEMINI_API_KEY` stays server-side and `GEMINI_MODEL` defaults to `gemini-3-flash-preview`. The route has a demo fallback when no key is present, which keeps the app testable without paid credentials.
+
+The provider boundary is intentionally isolated in `app/api/analyze/route.ts`, so a future adapter can support another vision API without changing the client workspace.
 
 ## State model
 
-The client currently owns `uploadedImage`, `messages`, `analysis`, `generatedPrompt`, `selectedModel`, `isAnalyzing`, `isEditingPrompt`, and `error`. The state shape is serializable so it can move to a database-backed conversation without a UI rewrite.
+The client owns `uploadedImage`, `messages`, `analysis`, `generatedPrompt`, `selectedModel`, `isAnalyzing`, `isEditingPrompt`, and `error`. The state shape is serializable so it can move to a database-backed conversation without a UI rewrite.
 
 ## Safety and performance
 
